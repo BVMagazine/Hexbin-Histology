@@ -40,6 +40,54 @@ x = x.flatten()
 y = y.flatten()
 z = average_image_data.flatten()  # Averaged grayscale intensity values
 
+# %%
+plt.imshow(z_reshape)
+
+
+# %%
+df = pd.concat([dfx, dfy], axis=1)
+df
+
+# %%
+
+plt.plot(df['x_points'], df['x_binned'])
+
+# %%
+
+x_peaks_binned = np.zeros((54, 41))
+for i in range(54-1):
+    x_peaks_binned[i] = x_peaks[i*41:(i+1)*41]
+x_peaks_binned[-1, :35] = x_peaks[(i+1)*41:]
+x_peaks_binned
+
+# %%
+plt.plot(x_points, x_peaks_binned.mean(axis=1))
+# %%
+i = 0
+x_peaks[i*41:(i+1)*41].mean(), x_binned[0]
+
+# %%
+len(y_peaks) / y_grid_size
+
+# %%
+
+y_peaks_binned = np.zeros((y_grid_size, 70))
+for i in range(y_grid_size-1):
+    y_peaks_binned[i] = y_peaks[i*70:(i+1)*70]
+y_peaks_binned[-1, :45] = y_peaks[(i+1)*70:]
+y_peaks_binned
+
+# %%
+plt.figure(figsize=(4,8))
+plt.plot(y_peaks_binned.mean(axis=1)[:-2], y_points[:-2])
+plt.plot(df['y_binned'][:-2], df['y_points'][:-2])
+
+# %%
+
+from collections import Counter
+count = Counter(y_digitized)
+count
+
 
 # %% Create figure with custom layout
 
@@ -62,26 +110,28 @@ max_intensity = 80  # or any value you want
 # Make sure to set the grid size match the ratio of the original images and weird math because of hexagons
 # [y=(desired bins)] [x=(desired bins * 1.73)*(x/y pixel ratio)]
 # ~Change Me~
-hb = ax_main.hexbin(x, y, C=z, gridsize=(54, 30), cmap='gnuplot', linewidths=0.5, edgecolors='face', vmax=max_intensity / 1.5)
+x_grid_size = 54
+y_grid_size = 30
+hb = ax_main.hexbin(x, y, C=z, gridsize=(x_grid_size, y_grid_size), cmap='gnuplot', linewidths=0.5, edgecolors='face', vmax=max_intensity / 1.5)
 plt.colorbar(hb, cax=ax_colorbar, label='Intensity')
 
 # Step 6: Create marginal distributions
 # Calculate peak values and create bins
-z_reshape = z.reshape(average_image_data.shape)
+z_reshape = z.reshape(average_image_data.shape) # ATLE: z_reshape and image1 are the sa
 x_peaks = np.max(z_reshape, axis=0)
 y_peaks = np.max(z_reshape, axis=1)
 
 # Create evenly spaced points for x and y axes
 # Make sure to set number of points to match the grid size
 # ~Change Me~
-x_points = np.linspace(0, max(x), 54)
-y_points = np.linspace(0, max(y), 30)
+x_points = np.linspace(0, max(x), x_grid_size)
+y_points = np.linspace(0, max(y), y_grid_size)
 
 # Calculate binned values
 # Ensure the number of bins matches the number of points + 1
 # ~Change Me~
-x_bins = np.linspace(0, len(x_peaks), 55)
-y_bins = np.linspace(0, len(y_peaks), 31)
+x_bins = np.linspace(0, len(x_peaks), x_grid_size+1)
+y_bins = np.linspace(0, len(y_peaks), y_grid_size+1)
 
 x_digitized = np.digitize(np.arange(len(x_peaks)), x_bins)
 y_digitized = np.digitize(np.arange(len(y_peaks)), y_bins)
